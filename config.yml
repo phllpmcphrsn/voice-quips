@@ -1,0 +1,70 @@
+# TODO think about adding page size (pagination)
+# TODO think about adding root path for URL
+
+# which env are we working in
+env: dev
+
+# where the audio files are stored, locally
+audioDirectory: "./audio_files/"
+
+prod:
+  api:
+    path: "/api/v1/voice-quips"
+    address: ":9090"
+
+  log:
+    level: info
+
+# obtains user/pass from envvars or commandline args
+  database:
+    metadata:
+      host: localhost
+      port: 5432
+      name: postgres
+      ssl:
+        enabled: false
+      credentials:
+        enabled: true  # enable obtaining credentials from envvars
+        userVar: POSTGRES_USER
+        passwordVar: POSTGRES_PASS
+    blob:
+      host: localhost
+      port: 9191
+      name: minio
+      ssl:
+        enabled: false
+      credentials:
+        enabled: true  # enable obtaining credentials from envvars
+        userVar: MINIO_USER
+        passwordVar: MINIO_PASS
+
+dev:
+  api:
+    path: "/voice-quips"
+    address: ":9090"
+
+  log:
+    level: debug
+
+  database:
+    metadata:
+      host: localhost
+      port: 5432
+      name: postgres
+      ssl:
+        enabled: false
+      credentials:
+        enabled: true  # enable obtaining credentials from envvars
+        userVar: POSTGRES_USER
+        passwordVar: POSTGRES_PASS
+    blob:
+      host: localhost
+      port: 9191
+      name: minio
+      ssl:
+        enabled: false
+      credentials:
+        enabled: true  # enable obtaining credentials from envvars
+        userVar: MINIO_USER
+        passwordVar: MINIO_PASS
+
