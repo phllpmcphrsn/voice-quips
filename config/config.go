@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"errors"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/viper"
 )
+
 
 // Config holds the configuration values
 type Config struct {
@@ -34,7 +35,7 @@ type LogLevel struct {
 // DatabaseConfig holds the database configuration values
 type DatabaseConfig struct {
 	MetadataStore	StorageConfig
-	BlobStore	StorageConfig
+	BlobStore	BlobStoreConfig
 }
 
 type StorageConfig struct {
@@ -43,6 +44,12 @@ type StorageConfig struct {
 	Name string
 	SSL SSL
 	Credentials Credentials
+}
+
+type BlobStoreConfig struct {
+	StorageConfig
+	Bucket string
+	Region string
 }
 
 // SSL determines if SSL will be enabled for database connections
@@ -96,7 +103,7 @@ func LoadConfig(file string) (*Config, error) {
 	}
 	
 	if config.Database.BlobStore.Credentials.Enabled {
-		handleCredentials(&config.Database.BlobStore)
+		handleCredentials(&config.Database.BlobStore.StorageConfig)
 	}
 
 	if config.Database.MetadataStore.Credentials.Enabled {

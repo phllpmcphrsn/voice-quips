@@ -18,7 +18,7 @@
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" source="7IgNUheAVe-pYQhXkYOQ-1" target="7IgNUheAVe-pYQhXkYOQ-7" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="7IgNUheAVe-pYQhXkYOQ-1" value="UploaderService" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="7IgNUheAVe-pYQhXkYOQ-1" value="UploaderLogic" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
                     <mxGeometry x="640" y="553" width="120" height="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-12" value="Persistence" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;labelPosition=center;verticalLabelPosition=top;align=center;verticalAlign=bottom;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
@@ -44,7 +44,7 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="7IgNUheAVe-pYQhXkYOQ-11" value="DownloaderService" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="7IgNUheAVe-pYQhXkYOQ-11" value="DownloaderLogic" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
                     <mxGeometry x="640" y="110" width="120" height="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-23" value="metadata store" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
@@ -105,7 +105,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="7IgNUheAVe-pYQhXkYOQ-51" value="SearchService" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="7IgNUheAVe-pYQhXkYOQ-51" value="SearchLogic" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
                     <mxGeometry x="640" y="360" width="120" height="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-54" value="&lt;div style=&quot;text-align: center; font-size: 13px;&quot;&gt;&lt;span style=&quot;font-family: &amp;quot;Comic Sans MS&amp;quot;; background-color: initial; font-size: 13px;&quot;&gt;Scale&lt;/span&gt;&lt;/div&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;Daily active searches: 10&lt;br style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;Daily downloads/plays: 100&lt;br style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;Daily Uploads: 2&lt;/font&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=13;" parent="1" vertex="1">
@@ -123,16 +123,16 @@
                 <mxCell id="5" value="" style="shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#4495D1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.audio_file;" parent="1" vertex="1">
                     <mxGeometry x="994.5" y="630" width="30" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="10" value="" style="group" vertex="1" connectable="0" parent="1">
+                <mxCell id="10" value="" style="group" parent="1" vertex="1" connectable="0">
                     <mxGeometry x="310" y="720" width="565" height="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-53" value="&lt;div style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;Audio File Information&lt;/span&gt;&lt;/div&gt;-&amp;gt;file size: &amp;lt;200KB&lt;br style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;(200KB * 20 files * 365) = 1.5MB/yr&lt;br style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;7.5MB/5yr" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontSize=13;fontStyle=1" parent="10" vertex="1">
                     <mxGeometry y="40" width="280" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="7" value="&lt;b style=&quot;color: rgb(240, 240, 240); font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot;&gt;Storage Estimations&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#E20AE6;" vertex="1" parent="10">
+                <mxCell id="7" value="&lt;b style=&quot;color: rgb(240, 240, 240); font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot;&gt;Storage Estimations&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#E20AE6;" parent="10" vertex="1">
                     <mxGeometry x="190" width="150" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="8" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b style=&quot;background-color: initial;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot;&gt;Metadata Information&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;/div&gt;&lt;b style=&quot;font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; record size: 100B&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; (100B * 20 files * 365) = 730KB/yr&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; 3.65MB/5yr&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=13;" vertex="1" parent="10">
+                <mxCell id="8" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b style=&quot;background-color: initial;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot;&gt;Metadata Information&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;/div&gt;&lt;b style=&quot;font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; record size: 100B&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; (100B * 20 files * 365) = 730KB/yr&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; 3.65MB/5yr&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=13;" parent="10" vertex="1">
                     <mxGeometry x="295" y="30" width="270" height="80" as="geometry"/>
                 </mxCell>
             </root>

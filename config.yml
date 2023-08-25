@@ -5,7 +5,7 @@
 env: dev
 
 # where the audio files are stored, locally
-audioDirectory: "./audio_files/"
+audioDirectory: "g:/Users/phllp/go/github.com/phllpmcphrsn/voice-uploader/audio_files"
 
 prod:
   api:
@@ -61,10 +61,12 @@ dev:
       host: localhost
       port: 9191
       name: minio
+      region: "us-east-1"
       ssl:
         enabled: false
       credentials:
-        enabled: true  # enable obtaining credentials from envvars
+        enabled: false  # enable obtaining credentials from envvars
         userVar: MINIO_USER
         passwordVar: MINIO_PASS
+      # TODO: add retry and timeout config values
 

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"os"
@@ -17,12 +17,12 @@ func TestLoadConfig(t *testing.T) {
 	}{
 		{
 			name:          "ValidConfigFile",
-			configFile:    "testdata/valid_config.yaml",
+			configFile:    "./test/valid_config.yml",
 			expectedError: false,
 		},
 		{
 			name:          "InvalidConfigFile",
-			configFile:    "testdata/invalid_config.yaml",
+			configFile:    "./test/empty_config.yml",
 			expectedError: true,
 		},
 		// Add more test cases as needed

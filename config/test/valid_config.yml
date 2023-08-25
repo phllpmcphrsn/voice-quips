@@ -1,0 +1,36 @@
+# which env are we working in
+env: dev
+
+# where the audio files are stored, locally
+audioDirectory: "g:/Users/phllp/go/github.com/phllpmcphrsn/voice-uploader/audio_files"
+
+dev:
+  api:
+    path: "/voice-quips"
+    address: ":9090"
+
+  log:
+    level: debug
+
+  database:
+    metadata:
+      host: localhost
+      port: 5432
+      name: postgres
+      ssl:
+        enabled: false
+      credentials:
+        enabled: true  # enable obtaining credentials from envvars
+        userVar: POSTGRES_USER
+        passwordVar: POSTGRES_PASS
+    blob:
+      host: localhost
+      port: 9191
+      name: minio
+      region: "us-east-1"
+      ssl:
+        enabled: false
+      credentials:
+        enabled: false  # enable obtaining credentials from envvars
+        userVar: MINIO_USER
+        passwordVar: MINIO_PASS

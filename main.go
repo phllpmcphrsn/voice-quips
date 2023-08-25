@@ -5,6 +5,7 @@ import (
 	"os"
 
 	log "golang.org/x/exp/slog"
+	errHandler "github.com/phllpmcphrsn/voice-quips/errors"
 )
 
 const (
@@ -60,12 +61,12 @@ func main() {
 
 	// if credentials aren't given as args, look for them in the env
 	if dbUser == "" && os.Getenv("DBUSER") == "" {
-		log.Error(errDbUsernameMissing.Error())
-		panic(errDbUsernameMissing)
+		log.Error(errHandler.ErrDbUsernameMissing.Error())
+		panic(errHandler.ErrDbUsernameMissing)
 	}
 	if dbPass == "" && os.Getenv("DBPASS") == "" {
-		log.Error(errDbPasswordMissing.Error())
-		panic(errDbPasswordMissing)
+		log.Error(errHandler.ErrDbPasswordMissing.Error())
+		panic(errHandler.ErrDbPasswordMissing)
 	}
 
 	config, err := LoadConfig(configFilePath)
@@ -101,18 +102,4 @@ func main() {
 
 	api := NewAPIServer(store, config.API.Address, config.Env)
 	api.StartRouter()
-}
-
-func readCsv(store *PostGresStore) {
-	f, err := os.Open(audioDirPath)
-	if err != nil {
-		log.Error("Unable to read/open file", "filename", audioDirPath)
-		panic(err)
-	}
-	defer f.Close()
-
-	err = CsvReader(f, store)
-	if err != nil {
-		panic(err)
-	}
 }
