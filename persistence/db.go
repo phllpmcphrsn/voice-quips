@@ -11,10 +11,10 @@ import (
 )
 
 type MetadataRepository interface {
-	CreateMetadata(context.Context, models.Metadata) (*models.Metadata, error)
-	DeleteMetadata(context.Context, string) error
 	GetMetadataById(context.Context, string) (*models.Metadata, error)
 	GetAllMetadata(context.Context) ([]*models.Metadata, error)
+	CreateMetadata(context.Context, models.Metadata) (*models.Metadata, error)
+	DeleteMetadata(context.Context, string) error
 }
 
 type PostgresStore struct {
@@ -45,7 +45,29 @@ func NewPostgresStore(config config.StorageConfig) (*PostgresStore, error) {
 	return &PostgresStore{db: db}, nil
 }
 
-func (p PostgresStore) CreateMetadata(ctx context.Context, metadata models.Metadata) (*models.Metadata, error) {
+func (p *PostgresStore) CreateTable() error {
+	stmt := `CREATE TABLE IF NOT EXISTS metadata (
+		id serial primary key,
+		filename varchar(50),
+		file_type varchar(6),
+		s3_link varchar(200),
+		category varchar(50),
+		upload_date timestamp
+	)`
+
+	_, err := p.db.Exec(stmt)
+	if err != nil {
+		log.Error("An error occured while creating the metadata table", "err", err)
+		return err
+	}
+	return nil
+}
+
+func (p *PostgresStore) GetMetadataById(context.Context, string) (*models.Metadata, error) {
+	
+}
+
+func (p *PostgresStore) CreateMetadata(ctx context.Context, metadata models.Metadata) (*models.Metadata, error) {
 	log.Debug("Inserting a metadata record into the DB", "record", metadata)
 	insertStmt := `
 	INSERT INTO metadata (
@@ -76,4 +98,19 @@ func (p PostgresStore) CreateMetadata(ctx context.Context, metadata models.Metad
 
 	log.Debug("Successfully inserted row", "record", savedMetadata)
 	return savedMetadata, nil
+}
+
+func (p *PostgresStore) DeleteMetadata(ctx context.Context, id string) error {
+	log.Debug("Deleting metadata record from the DB", "id", id)
+	deleteStmt := `	DELETE FROM metadata WHERE id=$1`
+
+	_, err := p.db.ExecContext(ctx, deleteStmt, id)
+
+	if err != nil {
+		log.Error("An error occurred while deleting from db", "err", err, "id", id)
+		return err
+	}
+
+	log.Debug("Successfully deleted row", "id", id)
+	return nil
 }
