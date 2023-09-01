@@ -1,13 +1,10 @@
-package business
+package s3
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"testing"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/minio/minio-go/v7"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,7 +53,7 @@ func TestAWSUploader_UploadObject(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			uploader := &AWSUploader{S3Client: nil, MetadataStore: nil}
+			uploader := &AWSClient{S3Client: nil}
 			uploader.S3Uploader = tc.mockUploader
 
 			err := uploader.UploadObject(context.Background(), tc.filename, tc.bucket)
@@ -72,4 +69,3 @@ func TestAWSUploader_UploadObject(t *testing.T) {
 }
 
 // Write similar tests for MinioUploader
-

@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram name="Page-1" id="8vaLGi14hAJcV_wnxX4P">
-        <mxGraphModel dx="1674" dy="814" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+        <mxGraphModel dx="1045" dy="1144" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -44,7 +44,7 @@
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="7IgNUheAVe-pYQhXkYOQ-11" value="DownloaderLogic" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
+                <mxCell id="7IgNUheAVe-pYQhXkYOQ-11" value="S3Service" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
                     <mxGeometry x="700" y="110" width="120" height="120" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-23" value="metadata store" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" vertex="1">
@@ -88,7 +88,7 @@
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-36" value="client" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="7IgNUheAVe-pYQhXkYOQ-42" vertex="1">
                     <mxGeometry x="70" width="50" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="7IgNUheAVe-pYQhXkYOQ-43" value="POST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" source="7IgNUheAVe-pYQhXkYOQ-39" target="7IgNUheAVe-pYQhXkYOQ-26" edge="1">
+                <mxCell id="7IgNUheAVe-pYQhXkYOQ-43" value="POST/DELETE" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontFamily=Comic Sans MS;fontSize=12;fontStyle=1" parent="1" source="7IgNUheAVe-pYQhXkYOQ-39" target="7IgNUheAVe-pYQhXkYOQ-26" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-46" value="&lt;div style=&quot;text-align: center; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;API&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;Download: download(id/name)&lt;/div&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;Search: search(id/name)&lt;/div&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;Upload: upload(file, filename)&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontSize=13;fontStyle=1" parent="1" vertex="1">
@@ -100,7 +100,7 @@
                 <mxCell id="3K80fAYk5EkW9mQfeSB6-6" value="Metadata information&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;file id, &lt;/span&gt;&lt;font style=&quot;background-color: initial; font-size: 13px;&quot; color=&quot;#e20ae6&quot;&gt;(PK)&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;file name,&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;file size,&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;file type, &lt;font color=&quot;#e20ae6&quot;&gt;(Index)&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;s3 link,&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;category, &lt;/span&gt;&lt;font style=&quot;background-color: initial; font-size: 13px;&quot; color=&quot;#e20ae6&quot;&gt;(Index)&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;upload date, &lt;/span&gt;&lt;font style=&quot;background-color: initial; font-size: 13px;&quot; color=&quot;#e20ae6&quot;&gt;(Partition Key)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontStyle=1;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="300" y="573" width="200" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;rounded=0;" parent="1" source="2" target="7IgNUheAVe-pYQhXkYOQ-1" edge="1">
+                <mxCell id="3" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;rounded=0;" parent="1" source="2" target="14" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="2" value="local store" style="aspect=fixed;html=1;points=[];align=center;image;fontSize=12;image=img/lib/azure2/general/Folder_Blank.svg;fontFamily=Comic Sans MS;fontStyle=1" parent="1" vertex="1">
@@ -110,16 +110,25 @@
                     <mxGeometry x="994.5" y="630" width="30" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="10" value="" style="group" parent="1" vertex="1" connectable="0">
-                    <mxGeometry x="310" y="720" width="565" height="120" as="geometry"/>
+                    <mxGeometry x="30" y="736" width="565" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="7IgNUheAVe-pYQhXkYOQ-53" value="&lt;div style=&quot;font-size: 13px;&quot;&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;Audio File Information&lt;/span&gt;&lt;/div&gt;-&amp;gt;file size: &amp;lt;200KB&lt;br style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;(200KB * 20 files * 365) = 1.5MB/yr&lt;br style=&quot;font-size: 13px;&quot;&gt;-&amp;gt;7.5MB/5yr" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Comic Sans MS;fontSize=13;fontStyle=1" parent="10" vertex="1">
-                    <mxGeometry y="40" width="280" height="80" as="geometry"/>
+                    <mxGeometry y="33.333333333333336" width="280" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="&lt;b style=&quot;color: rgb(240, 240, 240); font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot;&gt;Storage Estimations&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#E20AE6;" parent="10" vertex="1">
                     <mxGeometry x="190" width="150" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="8" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;b style=&quot;background-color: initial;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot;&gt;Metadata Information&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;/div&gt;&lt;b style=&quot;font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; record size: 100B&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; (100B * 20 files * 365) = 730KB/yr&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left; font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-family: Helvetica; font-size: 13px;&quot;&gt;&lt;font face=&quot;Comic Sans MS&quot; style=&quot;font-size: 13px;&quot;&gt;-&amp;gt; 3.65MB/5yr&lt;/font&gt;&lt;/b&gt;&lt;/div&gt;&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=13;" parent="10" vertex="1">
-                    <mxGeometry x="295" y="30" width="270" height="80" as="geometry"/>
+                    <mxGeometry x="295" y="25" width="270" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="local store handler" style="whiteSpace=wrap;html=1;aspect=fixed;fontFamily=Comic Sans MS;" vertex="1" parent="1">
+                    <mxGeometry x="640" y="603" width="80" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;elbow=vertical;dashed=1;endArrow=none;endFill=0;" edge="1" parent="1" source="17" target="14">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Some function to pull from and watch local storage for new files. Would use the existing services to save" style="text;html=1;strokeColor=#d6b656;fillColor=#FFFF99;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#030303;" vertex="1" parent="1">
+                    <mxGeometry x="810" y="700" width="120" height="90" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
