@@ -9,7 +9,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/minio/minio-go/v7"
-	errHandler "github.com/phllpmcphrsn/voice-quips/errors"
 )
 
 // S3Uploader defines the API for uploading objects to S3 storage
@@ -39,7 +38,7 @@ func NewAWSClient(client *s3.Client) *AWSClient {
 
 // UploadObject uploads to an AWS bucket with the given file
 func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) error {
-	var uploadError *errHandler.UploadError
+	var uploadError *UploadError
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -70,12 +69,12 @@ func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) e
 
 // DownloadObject downloads to an AWS bucket with the given file
 func (a *AWSClient) DownloadObject(ctx context.Context, objectName, bucket string) error {
-	var uploadError *errHandler.UploadError
+	var downloadError *DownloadError
 
 	file, err := os.Open(objectName)
 	if err != nil {
-		uploadError.Err = err
-		return uploadError
+		downloadError.Err = err
+		return downloadError
 	}
 
 	defer file.Close()
@@ -85,8 +84,8 @@ func (a *AWSClient) DownloadObject(ctx context.Context, objectName, bucket strin
 		Key:    &objectName,
 	})
 	if err != nil {
-		uploadError.Err = err
-		return uploadError
+		downloadError.Err = err
+		return downloadError
 	}
 
 	log.Debug("response from object being uploaded", "metadata", response.ResultMetadata)
@@ -105,7 +104,7 @@ func NewMinioClient(client *minio.Client) *MinioClient {
 
 // UploadObject uploads to an MinIO bucket with the given file
 func (uploader *MinioClient) UploadObject(ctx context.Context, filename, bucket string) error {
-	var uploadError *errHandler.UploadError
+	var uploadError *UploadError
 
 	file, err := os.Open(filename)
 	if err != nil {
@@ -145,25 +144,25 @@ func (uploader *MinioClient) UploadObject(ctx context.Context, filename, bucket 
 // DownloadObject uploads to an MinIO bucket with the given file
 // TODO this needs to return the file/data received
 func (m *MinioClient) DownloadObject(ctx context.Context, objectName, bucket string) error {
-	var uploadError *errHandler.UploadError
+	var downloadError *DownloadError
 
 	file, err := os.Open(objectName)
 	if err != nil {
-		uploadError.Err = err
-		return uploadError
+		downloadError.Err = err
+		return downloadError
 	}
 	defer file.Close()
 
 	size, err := file.Stat()
 	if err != nil {
-		uploadError.Err = err
-		return uploadError
+		downloadError.Err = err
+		return downloadError
 	}
 	
 	response, err := m.S3Client.PutObject(ctx, bucket, objectName, file, size.Size(), minio.PutObjectOptions{})
 	if err != nil {
-		uploadError.Err = err
-		return uploadError
+		downloadError.Err = err
+		return downloadError
 	}
 
 	log.Debug("response from object being uploaded", "metadata", response)

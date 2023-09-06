@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/phllpmcphrsn/voice-quips/config"
-	errHandler "github.com/phllpmcphrsn/voice-quips/errors"
 	log "golang.org/x/exp/slog"
 )
 
@@ -88,7 +87,7 @@ func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	_, err := p.db.Exec(stmt, columns)
 	if err != nil {
 		log.Error("Index for column(s) could not be created", "err", err)
-		return errHandler.IndexNotCreatedError("")
+		return IndexNotCreatedError("")
 	}
 	return nil
 }
@@ -109,9 +108,9 @@ func (p *PostgresStore) FindMetadataById(ctx context.Context, id string) (*Metad
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errHandler.NoRowsFoundError("")
+			return nil, NoRowsFoundError("")
 		}
-		return nil, errHandler.NewDBError(err)
+		return nil, NewDBError(err)
 	}
 	return &metadata, nil
 }
@@ -124,9 +123,9 @@ func (p *PostgresStore) FindAllMetadata(ctx context.Context) ([]*Metadata, error
 	rows, err := p.db.QueryContext(ctx, selectStmt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errHandler.NoRowsFoundError("")
+			return nil, NoRowsFoundError("")
 		}
-		return nil, errHandler.NewDBError(err)
+		return nil, NewDBError(err)
 	}
 	defer rows.Close()
 
@@ -141,7 +140,7 @@ func (p *PostgresStore) FindAllMetadata(ctx context.Context) ([]*Metadata, error
 			&metadata.UploadDate,
 		)
 		if err != nil {
-			return nil, errHandler.NewDBError(err)
+			return nil, NewDBError(err)
 		}
 		metadatum = append(metadatum, metadata)
 	}
@@ -150,7 +149,7 @@ func (p *PostgresStore) FindAllMetadata(ctx context.Context) ([]*Metadata, error
 	// due to the overall query failing then we'll need to check for that error after the loop
 	err = rows.Err()
 	if err != nil {
-		return nil, errHandler.NewDBError(err)
+		return nil, NewDBError(err)
 	}
 	return metadatum, nil
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	errHandler "github.com/phllpmcphrsn/voice-quips/errors"
 )
 
 type MockMetadataRepository struct {
@@ -56,7 +55,7 @@ func TestMetadataService_SaveMetadata(t *testing.T) {
 			inputMetadata:    Metadata{ID: 123, Filename: "TestMetadata"},
 			expectedMetadata: nil,
 			expectedError:    true,
-			returnedError: &errHandler.DBError{},
+			returnedError: &DBError{},
 		},
 		// Add more test cases as needed
 	}
