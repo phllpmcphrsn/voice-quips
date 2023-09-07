@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"os"
 
+	"github.com/phllpmcphrsn/voice-quips/config"
+	"github.com/phllpmcphrsn/voice-quips/metadata"
 	log "golang.org/x/exp/slog"
-	errHandler "github.com/phllpmcphrsn/voice-quips/errors"
 )
 
 const (
@@ -21,6 +23,9 @@ var configFilePath string
 var audioDirPath string
 var dbUser string
 var dbPass string
+
+var errDbUsernameMissing = errors.New("database username not given or found (usage: --dbuser <user> or DBUSER=<user>)")
+var errDbPasswordMissing = errors.New("database password not given or found (usage: --dbpass <password> or DBPASS=<password>)")
 
 // ensures all flag bindings occur prior to flag.Parse() being called
 func init() {
@@ -61,15 +66,15 @@ func main() {
 
 	// if credentials aren't given as args, look for them in the env
 	if dbUser == "" && os.Getenv("DBUSER") == "" {
-		log.Error(errHandler.ErrDbUsernameMissing.Error())
-		panic(errHandler.ErrDbUsernameMissing)
+		log.Error(errDbUsernameMissing.Error())
+		panic(errDbUsernameMissing)
 	}
 	if dbPass == "" && os.Getenv("DBPASS") == "" {
-		log.Error(errHandler.ErrDbPasswordMissing.Error())
-		panic(errHandler.ErrDbPasswordMissing)
+		log.Error(errDbPasswordMissing.Error())
+		panic(errDbPasswordMissing)
 	}
 
-	config, err := LoadConfig(configFilePath)
+	config, err := config.LoadConfig(configFilePath)
 	if err != nil {
 		log.Error("There was an issue loading the config file", "err", err)
 		panic(err)
@@ -77,17 +82,21 @@ func main() {
 
 	setLogger(config.Log.Level)
 	
-	store, err := NewPostgresStore(config, &Credentials{dbUser, []byte(dbPass)})
+	store, err := metadata.NewPostgresStore(config.Database.MetadataStore)
 	if err != nil {
 		log.Error("There was an issue reaching the database", "err", err)
 		panic(err)
 	}
-	log.Info("Connected to database...", "db", store.db.Stats())
+	log.Info("Connected to database...")
 
-	if err := store.Init(); err != nil {
-		log.Error("There was an issue initializing the database", "err", err)
+	if err := store.CreateTable(); err != nil {
+		log.Error("There was an issue creating the database table", "err", err)
 		panic(err)
-	} 
+	}
+	
+	indexedColumns := []string{"file_type", "category"}
+	indexName := "file_type_and_category_index"
+	if err := store.CreateIndexOn(indexName, indexedColumns)
 
 	// want to check if table has any elements prior to read and populating from csv
 	// if it does we'll assume that it's already been populated with data from csv

@@ -2,9 +2,6 @@ package metadata
 
 import "errors"
 
-var ErrDbUsernameMissing = errors.New("database username not given or found (usage: --dbuser <user> or DBUSER=<user>)")
-var ErrDbPasswordMissing = errors.New("database password not given or found (usage: --dbpass <password> or DBPASS=<password>)")
-
 type DBError struct {
 	Err error
 }

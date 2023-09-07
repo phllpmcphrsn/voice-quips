@@ -67,7 +67,7 @@ func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) e
 	return nil
 }
 
-// DownloadObject downloads to an AWS bucket with the given file
+// DownloadObject downloads from the given file an AWS bucket 
 func (a *AWSClient) DownloadObject(ctx context.Context, objectName, bucket string) error {
 	var downloadError *DownloadError
 

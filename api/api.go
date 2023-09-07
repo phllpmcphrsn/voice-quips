@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/phllpmcphrsn/voice-quips/metadata"
 	"github.com/phllpmcphrsn/voice-quips/s3"
-	"golang.org/x/text/cases"
+	log "golang.org/x/exp/slog"
 )
 
 const basePath = "/api/v1"
@@ -37,6 +37,19 @@ func (a *APIServer) ping(c *gin.Context) {
 }
 
 // GET /api/v1/audio
+// This endpoint will simply return the metadata of all files; no audio will be returned here
+func (a *APIServer) getAudio(c *gin.Context) {
+	// call to metadataService to get a list of filenames (or perhaps s3links)
+	metadatum, err := a.metadataService.FindAll(c)
+	if err != nil {
+		log.Error("Could not retrieve entries", "err", err)
+		c.AbortWithError(http.StatusInternalServerError, InternalServerError(""))
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, metadatum)
+}
+
 // GET /api/v1/audio/{id, name}
 // POST /api/v1/audio
 // DELETE /api/v1/audio/{id}
