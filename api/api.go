@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/phllpmcphrsn/voice-quips/metadata"
+	"github.com/phllpmcphrsn/voice-quips/file"
 	"github.com/phllpmcphrsn/voice-quips/s3"
 	log "golang.org/x/exp/slog"
 )
@@ -19,10 +19,10 @@ type APIServer struct {
 
 	// (Dependency) Inject the services
 	s3Service       s3.S3DownloadUploader
-	metadataService metadata.MetadataStorer
+	metadataService file.Storer
 }
 
-func NewAPIServer(address, env string, s3Service s3.S3DownloadUploader, metadataService metadata.MetadataStorer) *APIServer{
+func NewAPIServer(address, env string, s3Service s3.S3DownloadUploader, metadataService file.Storer) *APIServer{
 	return &APIServer{
 		listenAddr: address,
 		env: env,
@@ -66,9 +66,9 @@ func (a *APIServer) StartRouter() {
 	{
 		v1.GET("/ping", a.ping)
 		v1.GET("/audio/", a.getAudio)
-		v1.GET("/audio/:id", a.getAudioById)
-		v1.POST("/audio", a.createAudio)
-		v1.DELETE("/audio/:id", a.deleteAudio)
+		// v1.GET("/audio/:id", a.getAudioById)
+		// v1.POST("/audio", a.createAudio)
+		// v1.DELETE("/audio/:id", a.deleteAudio)
 	}
 }
 

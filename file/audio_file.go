@@ -1,12 +1,20 @@
-package metadata
+package file
 
 import "time"
 
-type Metadata struct {
+type AudioFile struct {
 	ID         uint      `json:"id"`
 	Filename   string    `json:"name"`
 	FileType   string    `json:"type"`
 	S3Link     string    `json:"link"`
 	Category   string    `json:"category"`
 	UploadDate time.Time `json:"uploadDate"`
+	Metadata   `json:"metadata"`
+}
+
+type Metadata struct {
+	Title  string `json:"title"`
+	Artist string `json:"artist"`
+	Album  string `json:"album"`
+	Year   string `json:"year"`
 }

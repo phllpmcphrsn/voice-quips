@@ -1,4 +1,4 @@
-package metadata
+package file
 
 import (
 	"context"
@@ -9,10 +9,10 @@ import (
 	log "golang.org/x/exp/slog"
 )
 
-type MetadataRepository interface {
-	FindById(context.Context, string) (*Metadata, error)
-	FindAll(context.Context) ([]*Metadata, error)
-	Create(context.Context, Metadata) (*Metadata, error)
+type FileInformationRepository interface {
+	FindById(context.Context, string) (*AudioFile, error)
+	FindAll(context.Context) ([]*AudioFile, error)
+	Create(context.Context, AudioFile) (*AudioFile, error)
 	Delete(context.Context, string) error
 }
 
@@ -45,18 +45,22 @@ func NewPostgresStore(config config.StorageConfig) (*PostgresStore, error) {
 }
 
 func (p *PostgresStore) CreateTable() error {
-	stmt := `CREATE TABLE IF NOT EXISTS metadata (
+	stmt := `CREATE TABLE IF NOT EXISTS file_info (
 		id serial primary key,
 		filename varchar(50),
 		file_type varchar(6),
 		s3_link varchar(200),
 		category varchar(50),
+		title varchar(100),
+		artist varchar(75),
+		album varchar(100),
+		year smallint,
 		upload_date timestamp
 	)`
 
 	_, err := p.db.Exec(stmt)
 	if err != nil {
-		log.Error("An error occured while creating the metadata table", "err", err)
+		log.Error("An error occured while creating the file_info table", "err", err)
 		return err
 	}
 	return nil
@@ -65,9 +69,9 @@ func (p *PostgresStore) CreateTable() error {
 // CreateIndexOn creates an index on the list of columns given
 func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	numberOfColumns := len(columns)
-	parameter := 2   // starting at 2 since the SQL statement will already be using $1
+	parameter := 2 // starting at 2 since the SQL statement will already be using $1
 	stmtParameters := ""
-	
+
 	// this is how we'll handle mulitple columns being given
 	// placeholders are needed for each column so, here, we're counting
 	// all of those columns and creating parameters for each
@@ -75,7 +79,7 @@ func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	for i < numberOfColumns {
 		// checking if we're at the last number so that we can adjust the end of the
 		// string to not have a space - purely for formatting
-		if i == numberOfColumns - 1 {
+		if i == numberOfColumns-1 {
 			stmtParameters = stmtParameters + fmt.Sprintf("$%d", parameter)
 		} else {
 			stmtParameters = stmtParameters + fmt.Sprintf("$%d ", parameter)
@@ -83,7 +87,7 @@ func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 		parameter++
 		i++
 	}
-	stmt := "CREATE INDEX IF NOT EXISTS $1 ON metadata(" + stmtParameters + ")"
+	stmt := "CREATE INDEX IF NOT EXISTS $1 ON AudioFile(" + stmtParameters + ")"
 	_, err := p.db.Exec(stmt, columns)
 	if err != nil {
 		log.Error("Index for column(s) could not be created", "err", err)
@@ -92,19 +96,19 @@ func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	return nil
 }
 
-func (p *PostgresStore) FindMetadataById(ctx context.Context, id string) (*Metadata, error) {
-	log.Debug("Retrieving a metadata record from the DB", "id", id)
-	var metadata Metadata
+func (p *PostgresStore) FindAudioFileById(ctx context.Context, id string) (*AudioFile, error) {
+	log.Debug("Retrieving a AudioFile record from the DB", "id", id)
+	var audioFile AudioFile
 
 	// Query for a single row
-	selectStmt := "SELECT * FROM metadata WHERE id = $1"
+	selectStmt := "SELECT * FROM file_info WHERE id = $1"
 	err := p.db.QueryRowContext(ctx, selectStmt, id).Scan(
-		&metadata.ID,
-		&metadata.Filename,
-		&metadata.FileType,
-		&metadata.FileType,
-		&metadata.Category,
-		&metadata.UploadDate,
+		&audioFile.ID,
+		&audioFile.Filename,
+		&audioFile.FileType,
+		&audioFile.FileType,
+		&audioFile.Category,
+		&audioFile.UploadDate,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -112,14 +116,14 @@ func (p *PostgresStore) FindMetadataById(ctx context.Context, id string) (*Metad
 		}
 		return nil, NewDBError(err)
 	}
-	return &metadata, nil
+	return &audioFile, nil
 }
 
-func (p *PostgresStore) FindAllMetadata(ctx context.Context) ([]*Metadata, error) {
-	var metadatum []*Metadata
+func (p *PostgresStore) FindAllAudioFile(ctx context.Context) ([]*AudioFile, error) {
+	var audioFiles []*AudioFile
 
 	// Query for all rows
-	selectStmt := "SELECT * FROM metadata"
+	selectStmt := "SELECT * FROM file_info"
 	rows, err := p.db.QueryContext(ctx, selectStmt)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -129,35 +133,35 @@ func (p *PostgresStore) FindAllMetadata(ctx context.Context) ([]*Metadata, error
 	}
 	defer rows.Close()
 
-	var metadata *Metadata
+	var audioFile *AudioFile
 	for rows.Next() {
 		err = rows.Scan(
-			&metadata.ID,
-			&metadata.Filename,
-			&metadata.FileType,
-			&metadata.FileType,
-			&metadata.Category,
-			&metadata.UploadDate,
+			&audioFile.ID,
+			&audioFile.Filename,
+			&audioFile.FileType,
+			&audioFile.FileType,
+			&audioFile.Category,
+			&audioFile.UploadDate,
 		)
 		if err != nil {
 			return nil, NewDBError(err)
 		}
-		metadatum = append(metadatum, metadata)
+		audioFiles = append(audioFiles, audioFile)
 	}
 
-	// According to go.dev, one reason to check for an error is that if the results are incomplete 
+	// According to go.dev, one reason to check for an error is that if the results are incomplete
 	// due to the overall query failing then we'll need to check for that error after the loop
 	err = rows.Err()
 	if err != nil {
 		return nil, NewDBError(err)
 	}
-	return metadatum, nil
+	return audioFiles, nil
 }
 
-func (p *PostgresStore) Create(ctx context.Context, metadata Metadata) (*Metadata, error) {
-	log.Debug("Inserting a metadata record into the DB", "record", metadata)
+func (p *PostgresStore) Create(ctx context.Context, audioFile AudioFile) (*AudioFile, error) {
+	log.Debug("Inserting a AudioFile record into the DB", "record", audioFile)
 	insertStmt := `
-	INSERT INTO metadata (
+	INSERT INTO file_info (
 		filename,
 		file_type,
 		s3_link,
@@ -167,29 +171,29 @@ func (p *PostgresStore) Create(ctx context.Context, metadata Metadata) (*Metadat
 	VALUES ($1, $2, $3, $4, $5)
 	RETURNING *`
 
-	var savedMetadata *Metadata
+	var savedAudioFile *AudioFile
 	err := p.db.QueryRowContext(
 		ctx,
 		insertStmt,
-		&metadata.Filename,
-		&metadata.FileType,
-		&metadata.S3Link,
-		&metadata.Category,
-		&metadata.UploadDate,
-	).Scan(&savedMetadata)
+		&audioFile.Filename,
+		&audioFile.FileType,
+		&audioFile.S3Link,
+		&audioFile.Category,
+		&audioFile.UploadDate,
+	).Scan(&savedAudioFile)
 
 	if err != nil {
 		log.Error("An error occurred while inserting to db", "err", err)
 		return nil, err
 	}
 
-	log.Debug("Successfully inserted row", "record", savedMetadata)
-	return savedMetadata, nil
+	log.Debug("Successfully inserted row", "record", savedAudioFile)
+	return savedAudioFile, nil
 }
 
 func (p *PostgresStore) Delete(ctx context.Context, id string) error {
-	log.Debug("Deleting metadata record from the DB", "id", id)
-	deleteStmt := `	DELETE FROM metadata WHERE id=$1`
+	log.Debug("Deleting audio file record from the DB", "id", id)
+	deleteStmt := `DELETE FROM file_info WHERE id=$1`
 
 	_, err := p.db.ExecContext(ctx, deleteStmt, id)
 

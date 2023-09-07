@@ -67,7 +67,7 @@ func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) e
 	return nil
 }
 
-// DownloadObject downloads from the given file an AWS bucket 
+// DownloadObject downloads from the given file an AWS bucket
 func (a *AWSClient) DownloadObject(ctx context.Context, objectName, bucket string) error {
 	var downloadError *DownloadError
 
@@ -158,7 +158,7 @@ func (m *MinioClient) DownloadObject(ctx context.Context, objectName, bucket str
 		downloadError.Err = err
 		return downloadError
 	}
-	
+
 	response, err := m.S3Client.PutObject(ctx, bucket, objectName, file, size.Size(), minio.PutObjectOptions{})
 	if err != nil {
 		downloadError.Err = err
