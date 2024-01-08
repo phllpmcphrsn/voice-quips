@@ -4,15 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
+	log "log/slog"
+
+	_ "github.com/lib/pq"
 	"github.com/phllpmcphrsn/voice-quips/config"
-	log "golang.org/x/exp/slog"
 )
 
 type FileInformationRepository interface {
-	FindById(context.Context, string) (*AudioFile, error)
-	FindAll(context.Context) ([]*AudioFile, error)
-	Create(context.Context, AudioFile) (*AudioFile, error)
+	FindById(context.Context, string) (*FileInformation, error)
+	FindAll(context.Context) ([]*FileInformation, error)
+	Create(context.Context, FileInformation) (*FileInformation, error)
 	Delete(context.Context, string) error
 }
 
@@ -21,13 +24,13 @@ type PostgresStore struct {
 	db *sql.DB
 }
 
-func NewPostgresStore(config config.StorageConfig) (*PostgresStore, error) {
+func NewPostgresStore(config config.FileInformationStoreConfig) (*PostgresStore, error) {
 	// TODO think about moving to the config
 	var ssl string
 	if config.SSL.Enabled {
-		ssl = "enabled"
+		ssl = "require"
 	} else {
-		ssl = "disabled"
+		ssl = "disable"
 	}
 
 	connStr := fmt.Sprintf("host=%s dbname=%s user=%s password=%s port=%d sslmode=%s", config.Host, config.Name, config.Credentials.User, string(config.Credentials.Password), config.Port, ssl)
@@ -66,29 +69,13 @@ func (p *PostgresStore) CreateTable() error {
 	return nil
 }
 
-// CreateIndexOn creates an index on the list of columns given
+// CreateIndexOn creates an index on the list of columns given. The name provided will
+// be 
 func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
-	numberOfColumns := len(columns)
-	parameter := 2 // starting at 2 since the SQL statement will already be using $1
-	stmtParameters := ""
+	stmtParameters := strings.Join(columns, ",")
 
-	// this is how we'll handle mulitple columns being given
-	// placeholders are needed for each column so, here, we're counting
-	// all of those columns and creating parameters for each
-	i := 0
-	for i < numberOfColumns {
-		// checking if we're at the last number so that we can adjust the end of the
-		// string to not have a space - purely for formatting
-		if i == numberOfColumns-1 {
-			stmtParameters = stmtParameters + fmt.Sprintf("$%d", parameter)
-		} else {
-			stmtParameters = stmtParameters + fmt.Sprintf("$%d ", parameter)
-		}
-		parameter++
-		i++
-	}
-	stmt := "CREATE INDEX IF NOT EXISTS $1 ON AudioFile(" + stmtParameters + ")"
-	_, err := p.db.Exec(stmt, columns)
+	stmt := "CREATE INDEX IF NOT EXISTS " + name + " ON file_info(" + stmtParameters + ")"
+	_, err := p.db.Exec(stmt)
 	if err != nil {
 		log.Error("Index for column(s) could not be created", "err", err)
 		return IndexNotCreatedError("")
@@ -96,19 +83,19 @@ func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	return nil
 }
 
-func (p *PostgresStore) FindAudioFileById(ctx context.Context, id string) (*AudioFile, error) {
-	log.Debug("Retrieving a AudioFile record from the DB", "id", id)
-	var audioFile AudioFile
+func (p *PostgresStore) FindById(ctx context.Context, id string) (*FileInformation, error) {
+	log.Debug("Retrieving a file_info record from the DB", "id", id)
+	var fileInformation FileInformation
 
 	// Query for a single row
 	selectStmt := "SELECT * FROM file_info WHERE id = $1"
 	err := p.db.QueryRowContext(ctx, selectStmt, id).Scan(
-		&audioFile.ID,
-		&audioFile.Filename,
-		&audioFile.FileType,
-		&audioFile.FileType,
-		&audioFile.Category,
-		&audioFile.UploadDate,
+		&fileInformation.ID,
+		&fileInformation.Filename,
+		&fileInformation.FileType,
+		&fileInformation.FileType,
+		&fileInformation.Category,
+		&fileInformation.UploadDate,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -116,11 +103,11 @@ func (p *PostgresStore) FindAudioFileById(ctx context.Context, id string) (*Audi
 		}
 		return nil, NewDBError(err)
 	}
-	return &audioFile, nil
+	return &fileInformation, nil
 }
 
-func (p *PostgresStore) FindAllAudioFile(ctx context.Context) ([]*AudioFile, error) {
-	var audioFiles []*AudioFile
+func (p *PostgresStore) FindAll(ctx context.Context) ([]*FileInformation, error) {
+	var fileInformations []*FileInformation
 
 	// Query for all rows
 	selectStmt := "SELECT * FROM file_info"
@@ -133,20 +120,20 @@ func (p *PostgresStore) FindAllAudioFile(ctx context.Context) ([]*AudioFile, err
 	}
 	defer rows.Close()
 
-	var audioFile *AudioFile
+	var fileInformation *FileInformation
 	for rows.Next() {
 		err = rows.Scan(
-			&audioFile.ID,
-			&audioFile.Filename,
-			&audioFile.FileType,
-			&audioFile.FileType,
-			&audioFile.Category,
-			&audioFile.UploadDate,
+			&fileInformation.ID,
+			&fileInformation.Filename,
+			&fileInformation.FileType,
+			&fileInformation.FileType,
+			&fileInformation.Category,
+			&fileInformation.UploadDate,
 		)
 		if err != nil {
 			return nil, NewDBError(err)
 		}
-		audioFiles = append(audioFiles, audioFile)
+		fileInformations = append(fileInformations, fileInformation)
 	}
 
 	// According to go.dev, one reason to check for an error is that if the results are incomplete
@@ -155,11 +142,11 @@ func (p *PostgresStore) FindAllAudioFile(ctx context.Context) ([]*AudioFile, err
 	if err != nil {
 		return nil, NewDBError(err)
 	}
-	return audioFiles, nil
+	return fileInformations, nil
 }
 
-func (p *PostgresStore) Create(ctx context.Context, audioFile AudioFile) (*AudioFile, error) {
-	log.Debug("Inserting a AudioFile record into the DB", "record", audioFile)
+func (p *PostgresStore) Create(ctx context.Context, fileInformation FileInformation) (*FileInformation, error) {
+	log.Debug("Inserting a file_info record into the DB", "record", fileInformation)
 	insertStmt := `
 	INSERT INTO file_info (
 		filename,
@@ -171,24 +158,24 @@ func (p *PostgresStore) Create(ctx context.Context, audioFile AudioFile) (*Audio
 	VALUES ($1, $2, $3, $4, $5)
 	RETURNING *`
 
-	var savedAudioFile *AudioFile
+	var savedfileInformation *FileInformation
 	err := p.db.QueryRowContext(
 		ctx,
 		insertStmt,
-		&audioFile.Filename,
-		&audioFile.FileType,
-		&audioFile.S3Link,
-		&audioFile.Category,
-		&audioFile.UploadDate,
-	).Scan(&savedAudioFile)
+		&fileInformation.Filename,
+		&fileInformation.FileType,
+		&fileInformation.S3Link,
+		&fileInformation.Category,
+		&fileInformation.UploadDate,
+	).Scan(&savedfileInformation)
 
 	if err != nil {
 		log.Error("An error occurred while inserting to db", "err", err)
 		return nil, err
 	}
 
-	log.Debug("Successfully inserted row", "record", savedAudioFile)
-	return savedAudioFile, nil
+	log.Debug("Successfully inserted row", "record", savedfileInformation)
+	return savedfileInformation, nil
 }
 
 func (p *PostgresStore) Delete(ctx context.Context, id string) error {

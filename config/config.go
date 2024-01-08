@@ -6,50 +6,53 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "golang.org/x/exp/slog"
+	log "log/slog"
 
 	"github.com/spf13/viper"
 )
 
-
 // Config holds the configuration values
 type Config struct {
-	Env      string
 	AudioDirectory string
-	API      APIConfig
-	Log      LogLevel
-	Database DatabaseConfig
+	API            APIConfig      `mapstructure:"api"`
+	Log            Log            `mapstructure:"log"`
+	Database       DatabaseConfig `mapstructure:"database"`
 }
 
 // APIConfig holds the API configuration values
 type APIConfig struct {
-	Address string
+	Address string `mapstructure:"address"`
+	Path    string `mapstructure:"path"`
+	Env     string `mapstructure:"env"`
 }
 
-// LogLevel holds the log configuration values
-type LogLevel struct {
-	LevelStr string
-	Level log.Level
+// Log holds the log configuration values
+type Log struct {
+	Level string `mapstructure:"level"`
 }
 
 // DatabaseConfig holds the database configuration values
 type DatabaseConfig struct {
-	MetadataStore	StorageConfig
-	BlobStore	BlobStoreConfig
+	FileInfoConfig FileInformationStoreConfig `mapstructure:"file"`
+	S3Config       S3Config                   `mapstructure:"s3"`
 }
 
-type StorageConfig struct {
-	Host string
-	Port int
-	Name string
-	SSL SSL
-	Credentials Credentials
+type FileInformationStoreConfig struct {
+	Host        string      `mapstructure:"host"`
+	Port        int         `mapstructure:"port"`
+	Name        string      `mapstructure:"name"`
+	SSL         SSL         `mapstructure:"ssl"`
+	Credentials Credentials `mapstructure:"credentials"`
 }
 
-type BlobStoreConfig struct {
-	StorageConfig
-	Bucket string
-	Region string
+type S3Config struct {
+	Bucket      string      `mapstructure:"bucket"`
+	Region      string      `mapstructure:"region"`
+	Endpoint    string      `mapstructure:"endpoint"`
+	Retry       int         `mapstructure:"retry"`
+	Timeout     int64       `mapstructure:"timeout"`
+	SSL         SSL         `mapstructure:"ssl"`
+	Credentials Credentials `mapstructure:"credentials"`
 }
 
 // SSL determines if SSL will be enabled for database connections
@@ -59,11 +62,11 @@ type SSL struct {
 
 // Credentials stores persistence layer-related credentials
 type Credentials struct {
-	Enabled bool
-	UserVar string
-	PasswordVar string
+	GetFromEnv  bool   `mapstructure:"envvar"`
+	UserVar     string `mapstructure:"userVar"`
+	PasswordVar string `mapstructure:"passwordVar"`
 
-	User string
+	User     string
 	Password []byte
 }
 
@@ -73,19 +76,15 @@ func LoadConfig(file string) (*Config, error) {
 	if file != "" {
 		viper.SetConfigFile(file)
 	} else {
-		// If no file specified, look for the default file in the current directory
-		dir, err := os.Getwd()
-		if err != nil {
-			log.Error("Failed to get current directory", "err", err, "")
-		}
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
-		viper.AddConfigPath(dir)
+		viper.AddConfigPath("..")
 	}
 
 	// Read the configuration file
 	err := viper.ReadInConfig()
 	if err != nil {
+		log.Error("an error occurred while reading in config file", "err", err)
 		return nil, err
 	}
 
@@ -93,55 +92,58 @@ func LoadConfig(file string) (*Config, error) {
 	var config Config
 	err = viper.Unmarshal(&config)
 	if err != nil {
+		log.Error("an error occurred while unmarshaling config file", "err", err)
 		return nil, err
 	}
 
 	// if path doesn't exist an error will be returned
 	err = PathExists(config.AudioDirectory)
 	if err != nil {
-		return nil, err
-	}
-	
-	if config.Database.BlobStore.Credentials.Enabled {
-		handleCredentials(&config.Database.BlobStore.StorageConfig)
+		log.Error("missing directory for audio files in config", "err", err)
+		return nil, errors.New("missing directory for audio files in config")
 	}
 
-	if config.Database.MetadataStore.Credentials.Enabled {
-		handleCredentials(&config.Database.MetadataStore)
+	// TODO add if-statements checking for fields' values existence
+	// TODO API if-statements
+	// TOOD Database if-statements
+	if config.Database.FileInfoConfig.Credentials.GetFromEnv {
+		config.Database.FileInfoConfig.Credentials.GetCredentialsFromEnv()
 	}
 
-	// Get a valid slog log level
-	config.Log.Level = GetLogLevel(config.Log.LevelStr)
+	if config.Database.S3Config.Credentials.GetFromEnv {
+		config.Database.S3Config.Credentials.GetCredentialsFromEnv()
+	}
 
+	log.Info("unmarshalled config in viper", "config", config)
 	return &config, nil
 }
 
-// handleCredentials will set the database config's 
-func handleCredentials(store *StorageConfig) {
-	user := os.Getenv(store.Credentials.UserVar)
+// GetCredentialsFromEnv will set the user and password values to envvar values
+func (c *Credentials) GetCredentialsFromEnv() {
+	user := os.Getenv(c.UserVar)
 	if user != "" {
-		store.Credentials.UserVar = user
+		c.User = user
 	}
-	
-	password := os.Getenv(store.Credentials.PasswordVar)
+
+	password := os.Getenv(c.PasswordVar)
 	if password != "" {
-		store.Credentials.Password = []byte(password)
+		c.Password = []byte(password)
 	}
 }
 
 func PathExists(path string) error {
-	if _, err := os.Stat(path); err == nil {	
+	if _, err := os.Stat(path); err == nil {
 		return nil
 	} else if errors.Is(err, os.ErrNotExist) {
 		// this is where it would be a good point to notify the developer to reload the
 		// config with the path
-		log.Error("Couldn't find file/directory at the given path.", "err", err)
+		log.Error("Couldn't find file/directory at the given path.", "err", err, "path", path)
 		// may need to see about running a watch on the config file so that the user can
 		// do a hot reload
 		return err
 	} else {
 		// Schrodinger: file may or may not exist. See err for details.
-		log.Error("Unknown error occurred while checking for path's existence", "err", err) 
+		log.Error("Unknown error occurred while checking for path's existence", "err", err)
 		return err
 	}
 }
@@ -154,7 +156,6 @@ func GetConfigFilePath() string {
 	}
 	return filepath.Join(dir, "config.yaml")
 }
-
 
 // GetLogLevel returns the slog log level based on a string representation of the log level.
 // INFO is used as the default in case a level isn't given or is unexpected

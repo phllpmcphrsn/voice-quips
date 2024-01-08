@@ -1,72 +1,41 @@
 # TODO think about adding page size (pagination)
 # TODO think about adding root path for URL
 
-# which env are we working in
-env: dev
 
 # where the audio files are stored, locally
 audioDirectory: "g:/Users/phllp/go/github.com/phllpmcphrsn/voice-uploader/audio_files"
 
-prod:
-  api:
-    path: "/api/v1/voice-quips"
-    address: ":9090"
+api:
+  path: "/voice-quips"
+  address: ":9090"
+  env: "dev"
 
-  log:
-    level: info
+log:
+  level: debug
 
-# obtains user/pass from envvars or commandline args
-  database:
-    metadata:
-      host: localhost
-      port: 5432
-      name: postgres
-      ssl:
-        enabled: false
-      credentials:
-        enabled: true  # enable obtaining credentials from envvars
-        userVar: POSTGRES_USER
-        passwordVar: POSTGRES_PASS
-    blob:
-      host: localhost
-      port: 9191
-      name: minio
-      ssl:
-        enabled: false
-      credentials:
-        enabled: true  # enable obtaining credentials from envvars
-        userVar: MINIO_USER
-        passwordVar: MINIO_PASS
-
-dev:
-  api:
-    path: "/voice-quips"
-    address: ":9090"
-
-  log:
-    level: debug
-
-  database:
-    metadata:
-      host: localhost
-      port: 5432
-      name: postgres
-      ssl:
-        enabled: false
-      credentials:
-        enabled: true  # enable obtaining credentials from envvars
-        userVar: POSTGRES_USER
-        passwordVar: POSTGRES_PASS
-    blob:
-      host: localhost
-      port: 9191
-      name: minio
-      region: "us-east-1"
-      ssl:
-        enabled: false
-      credentials:
-        enabled: false  # enable obtaining credentials from envvars
-        userVar: MINIO_USER
-        passwordVar: MINIO_PASS
-      # TODO: add retry and timeout config values
-
+database:
+  file:
+    host: "localhost"
+    port: 5432
+    name: "voice_quips"
+    ssl:
+      enabled: false
+    credentials:
+      envvar: true  # enable obtaining credentials from envvars
+      userVar: "POSTGRES_USER"
+      passwordVar: "POSTGRES_PASSWORD"
+  s3:
+    # path:
+    #   config: "g:/Users/phllp/go/github.com/phllpmcphrsn/voice-uploader/.aws/config"
+    #   credentials: "g:/Users/phllp/go/github.com/phllpmcphrsn/voice-uploader/.aws/credentials"
+    bucket: "quips"
+    credentials:
+      envvar: true
+      userVar: "MINIO_USER"
+      passwordVar: "MINIO_PASS"
+    endpoint: "localhost:9090"
+    region: "us-east-1"
+    ssl:
+      enabled: false
+    retry: 1
+    timeout: 100 # ms

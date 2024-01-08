@@ -2,7 +2,7 @@ package file
 
 import "time"
 
-type AudioFile struct {
+type FileInformation struct {
 	ID         uint      `json:"id"`
 	Filename   string    `json:"name"`
 	FileType   string    `json:"type"`

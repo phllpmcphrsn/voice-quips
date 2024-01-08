@@ -1,40 +1,30 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"os"
 
+	log "log/slog"
+
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/phllpmcphrsn/voice-quips/api"
 	"github.com/phllpmcphrsn/voice-quips/config"
-	"github.com/phllpmcphrsn/voice-quips/metadata"
-	log "golang.org/x/exp/slog"
+	"github.com/phllpmcphrsn/voice-quips/file"
+	"github.com/phllpmcphrsn/voice-quips/s3"
 )
 
 const (
-	defaultAudioDirPath = "./audio_files/"
-	audioDirPathUsage = "audio directory path (eg. '/etc/audio/)."
 	defaultConfigFilePath = "./config.yml"
-	configFilePathUsage = "Config file path (eg. '/etc/api/config.yml'). Config must be named 'config.yml'."
-	dbUserUsage = "Username for database. If left empty, the program will look for the DBUSER environment variable"
-	dbPasswordUsage = "Password for database. If left empty, the program will look for the DBPASS environment variable"
+	configFilePathUsage   = "Config file path (eg. '/etc/api/config.yml'). Config must be named 'config.yml'."
 )
 
 var configFilePath string
-var audioDirPath string
-var dbUser string
-var dbPass string
-
-var errDbUsernameMissing = errors.New("database username not given or found (usage: --dbuser <user> or DBUSER=<user>)")
-var errDbPasswordMissing = errors.New("database password not given or found (usage: --dbpass <password> or DBPASS=<password>)")
 
 // ensures all flag bindings occur prior to flag.Parse() being called
 func init() {
 	flag.StringVar(&configFilePath, "config", defaultConfigFilePath, configFilePathUsage)
 	flag.StringVar(&configFilePath, "c", defaultConfigFilePath, configFilePathUsage)
-	flag.StringVar(&audioDirPath, "dir", defaultAudioDirPath, audioDirPathUsage)
-	flag.StringVar(&audioDirPath, "data", defaultAudioDirPath, audioDirPathUsage)
-	flag.StringVar(&dbUser, "dbuser", "", dbUserUsage)
-	flag.StringVar(&dbPass, "dbpass", "", dbPasswordUsage)
 }
 
 func setLogger(level log.Level) {
@@ -44,7 +34,7 @@ func setLogger(level log.Level) {
 
 //	@title			Kaggle 2023 Car Models API
 //	@version		1.0
-//	@description	REST API for Kaggle 2023 Car Models Dataset which can be found here 
+//	@description	REST API for Kaggle 2023 Car Models Dataset which can be found here
 //	@description	https://www.kaggle.com/datasets/peshimaammuzammil/2023-car-model-dataset-all-data-you-need?resource=download
 //	@termsOfService	http://swagger.io/terms/
 
@@ -55,60 +45,89 @@ func setLogger(level log.Level) {
 //	@license.name	Apache 2.0
 //	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
 
-//	@host		localhost:9090
-//	@BasePath	/api/v1
-func main() {	
+// @host		localhost:9090
+// @BasePath	/api/v1
+func main() {
 	// could place this in init() but it'll cause errors for tests
 	// error: "flag provided but not defined"
 	flag.Parse()
 
 	var err error
 
-	// if credentials aren't given as args, look for them in the env
-	if dbUser == "" && os.Getenv("DBUSER") == "" {
-		log.Error(errDbUsernameMissing.Error())
-		panic(errDbUsernameMissing)
-	}
-	if dbPass == "" && os.Getenv("DBPASS") == "" {
-		log.Error(errDbPasswordMissing.Error())
-		panic(errDbPasswordMissing)
+	if configFilePath == "" {
+		log.Warn("checking default config path since one was not given via a flag")
 	}
 
-	config, err := config.LoadConfig(configFilePath)
+	cfg, err := config.LoadConfig(configFilePath)
 	if err != nil {
 		log.Error("There was an issue loading the config file", "err", err)
 		panic(err)
 	}
-
-	setLogger(config.Log.Level)
 	
-	store, err := metadata.NewPostgresStore(config.Database.MetadataStore)
+	logLevel := config.GetLogLevel(cfg.Log.Level)
+	setLogger(logLevel)
+
+	// initialize database and service for file information
+	store, err := initDB(cfg.Database.FileInfoConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	fileService := file.NewFileInformationService(store)
+
+	// initialize s3 client and service
+	// TODO figure out a better or more extensible way to define a client
+	// some layer should be in front of the s3 client such that I'm not coupling
+	// a client here. in other words, I need some client abstraction
+	client, err := initS3Client(&cfg.Database.S3Config)
+	if err != nil {
+		panic(err)
+	}
+
+	s3Service := s3.NewMinioClient(client)
+
+	server := api.NewAPIServer(cfg.API, s3Service, fileService)
+	server.StartRouter()
+}
+
+func initDB(cfg config.FileInformationStoreConfig) (*file.PostgresStore, error) {
+	store, err := file.NewPostgresStore(cfg)
 	if err != nil {
 		log.Error("There was an issue reaching the database", "err", err)
-		panic(err)
+		return nil, err
 	}
 	log.Info("Connected to database...")
 
-	if err := store.CreateTable(); err != nil {
+	err = store.CreateTable()
+	if err != nil {
 		log.Error("There was an issue creating the database table", "err", err)
-		panic(err)
+		return nil, err
 	}
-	
+
 	indexedColumns := []string{"file_type", "category"}
 	indexName := "file_type_and_category_index"
-	if err := store.CreateIndexOn(indexName, indexedColumns)
-
-	// want to check if table has any elements prior to read and populating from csv
-	// if it does we'll assume that it's already been populated with data from csv
-	count, err := store.Count()
+	err = store.CreateIndexOn(indexName, indexedColumns)
 	if err != nil {
-		log.Error("An error occured while checking for table's count", "err", err)
-		panic(err)
-	} else if count == 0 {
-		log.Info("Populating cars table...")
-		go readCsv(store)
+		log.Error("There was an issue creating the database index. Index will need to be created manually", "err", err)
+	}
+	
+	return store, nil
+}
+
+// initialize the s3 client
+func initS3Client(cfg *config.S3Config) (*minio.Client, error) {
+	accessKey := cfg.Credentials.User
+	secretKey := cfg.Credentials.Password
+	endpoint := cfg.Endpoint
+
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, string(secretKey), ""),
+		Secure: cfg.SSL.Enabled,
+	})
+	if err != nil {
+		log.Error("There was an issue initializing the MinIO client", "err", err)
+		return nil, err
 	}
 
-	api := NewAPIServer(store, config.API.Address, config.Env)
-	api.StartRouter()
+	return minioClient, nil
 }

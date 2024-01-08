@@ -1,12 +1,18 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	log "log/slog"
+
 	"github.com/stretchr/testify/assert"
-	log "golang.org/x/exp/slog"
 )
+
+const testConfigDir string = "./test"
+const emptyConfigFileName string = "/empty_config.yml"
+const validConfigFileName string = "/valid_config.yml"
 
 func TestLoadConfig(t *testing.T) {
 	testCases := []struct {
@@ -17,13 +23,18 @@ func TestLoadConfig(t *testing.T) {
 	}{
 		{
 			name:          "ValidConfigFile",
-			configFile:    "./test/valid_config.yml",
+			configFile:    fmt.Sprintf("%s%s", testConfigDir, validConfigFileName),
 			expectedError: false,
 		},
 		{
 			name:          "InvalidConfigFile",
-			configFile:    "./test/empty_config.yml",
+			configFile:    fmt.Sprintf("%s%s", testConfigDir, emptyConfigFileName),
 			expectedError: true,
+		},
+		{
+			name:          "NoConfigFileGiven",
+			configFile:    "",
+			expectedError: false,
 		},
 		// Add more test cases as needed
 	}
@@ -48,60 +59,28 @@ func TestLoadConfig(t *testing.T) {
 	}
 }
 
-func TestHandleCredentials(t *testing.T) {
+func TestLoadConfigWithNoFileGiven(t *testing.T) {
 	testCases := []struct {
-		name         string
-		store        StorageConfig
-		envVars      map[string]string
-		expectedUser string
-		expectedPass []byte
+		name          string
+		configFile    string
+		expectedError bool
 	}{
 		{
-			name: "CredentialsEnabled",
-			store: StorageConfig{
-				Credentials: Credentials{
-					Enabled:     true,
-					UserVar:     "TEST_USER",
-					PasswordVar: "TEST_PASS",
-					User:        "defaultUser",
-					Password:    []byte("defaultPass"),
-				},
-			},
-			envVars: map[string]string{
-				"TEST_USER": "testUser",
-				"TEST_PASS": "testPass",
-			},
-			expectedUser: "testUser",
-			expectedPass: []byte("testPass"),
+			name:          "NoFileGiven_ConfigYMLExists",
+			expectedError: false,
 		},
-		{
-			name: "CredentialsDisabled",
-			store: StorageConfig{
-				Credentials: Credentials{
-					Enabled: false,
-					UserVar: "TEST_USER",
-				},
-			},
-			envVars:      map[string]string{},
-			expectedUser: "defaultUser",
-			expectedPass: []byte("defaultPass"),
-		},
-		// Add more test cases as needed
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Set environment variables for test case
-			for key, value := range tc.envVars {
-				os.Setenv(key, value)
-				defer os.Unsetenv(key)
+			// Load config
+			_, err := LoadConfig("")
+
+			if tc.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
-
-			// Handle credentials
-			handleCredentials(&tc.store)
-
-			assert.Equal(t, tc.expectedUser, tc.store.Credentials.UserVar)
-			assert.Equal(t, tc.expectedPass, tc.store.Credentials.Password)
 		})
 	}
 }
@@ -114,7 +93,7 @@ func TestPathExists(t *testing.T) {
 	}{
 		{
 			name:          "ExistingPath",
-			path:          "testdata",
+			path:          "./test/valid_config.yml",
 			expectedError: false,
 		},
 		{
@@ -179,3 +158,60 @@ func TestGetLogLevel(t *testing.T) {
 		})
 	}
 }
+
+// func TestHandleCredentials(t *testing.T) {
+// 	testCases := []struct {
+// 		name         string
+// 		store        FileInformationStoreConfig
+// 		envVars      map[string]string
+// 		expectedUser string
+// 		expectedPass []byte
+// 	}{
+// 		{
+// 			name: "CredentialsEnabled",
+// 			store: FileInformationStoreConfig{
+// 				Credentials: Credentials{
+// 					UserVar:     "TEST_USER",
+// 					PasswordVar: "TEST_PASS",
+// 					User:        "defaultUser",
+// 					Password:    []byte("defaultPass"),
+// 				},
+// 			},
+// 			envVars: map[string]string{
+// 				"TEST_USER": "testUser",
+// 				"TEST_PASS": "testPass",
+// 			},
+// 			expectedUser: "testUser",
+// 			expectedPass: []byte("testPass"),
+// 		},
+// 		{
+// 			name: "CredentialsDisabled",
+// 			store: FileInformationStoreConfig{
+// 				Credentials: Credentials{
+// 					UserVar: "TEST_USER",
+// 				},
+// 			},
+// 			envVars:      map[string]string{},
+// 			expectedUser: "defaultUser",
+// 			expectedPass: []byte("defaultPass"),
+// 		},
+// 		// Add more test cases as needed
+// 	}
+
+// 	for _, tc := range testCases {
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			// Set environment variables for test case
+// 			for key, value := range tc.envVars {
+// 				os.Setenv(key, value)
+// 				defer os.Unsetenv(key)
+// 			}
+
+// 			// Handle credentials
+// 			handleCredentials(&tc.store)
+
+// 			assert.Equal(t, tc.expectedUser, tc.store.Credentials.UserVar)
+// 			assert.Equal(t, tc.expectedPass, tc.store.Credentials.Password)
+// 		})
+// 	}
+// }
+

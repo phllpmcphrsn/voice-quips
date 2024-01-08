@@ -6,7 +6,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.3
 	github.com/minio/minio-go/v7 v7.0.62
 	github.com/spf13/viper v1.16.0
-	golang.org/x/exp v0.0.0-20230810033253-352e893a4cad
 )
 
 require (
@@ -30,7 +29,6 @@ require (
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
@@ -53,11 +51,12 @@ require (
 )
 
 require (
-	github.com/aws/aws-sdk-go v1.44.329
 	github.com/aws/aws-sdk-go-v2 v1.21.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gin-gonic/gin v1.9.1
+	github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/lib/pq v1.10.9
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect

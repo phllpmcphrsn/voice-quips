@@ -5,39 +5,39 @@ import (
 	"os"
 	"path/filepath"
 
-	log "golang.org/x/exp/slog"
+	log "log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/minio/minio-go/v7"
 )
 
-// S3Uploader defines the API for uploading objects to S3 storage
-type S3Uploader interface {
+// Uploader defines the API for uploading objects to S3 storage
+type Uploader interface {
 	UploadObject(ctx context.Context, filename, bucket string) error
 }
 
-// S3Downloader defines the API for downloading objects to S3 storage
-type S3Downloader interface {
-	DownloadObject(ctx context.Context, objectName, bucket string) error
+// Downloader defines the API for downloading objects to S3 storage
+type Downloader interface {
+	DownloadObject(ctx context.Context, objectName, bucket string) ([]byte, error)
 }
 
-type S3DownloadUploader interface {
-	S3Uploader
-	S3Downloader
+type DownloadUploader interface {
+	Uploader
+	Downloader
 }
 
-// AWSClient is a struct that implements the S3DownloadUploader interface using AWS's S3 SDK for Go
-type AWSClient struct {
+// S3Client is a struct that implements the DownloadUploader interface using AWS's S3 SDK for Go
+type S3Client struct {
 	// S3Client is the service client for Amazon S3
 	S3Client *s3.Client
 }
 
-func NewAWSClient(client *s3.Client) *AWSClient {
-	return &AWSClient{client}
+func New(client *s3.Client) *S3Client {
+	return &S3Client{client}
 }
 
 // UploadObject uploads to an AWS bucket with the given file
-func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) error {
+func (a *S3Client) UploadObject(ctx context.Context, filename, bucket string) error {
 	var uploadError *UploadError
 
 	file, err := os.Open(filename)
@@ -48,7 +48,7 @@ func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) e
 
 	defer file.Close()
 
-	// Want to determine the file extension so that we can set the approriate content-type header
+	// want to determine the file extension so that we can set the approriate content-type header
 	extension := filepath.Ext(filename)
 	contentType := GetContentType(extension)
 
@@ -68,7 +68,7 @@ func (a *AWSClient) UploadObject(ctx context.Context, filename, bucket string) e
 }
 
 // DownloadObject downloads from the given file an AWS bucket
-func (a *AWSClient) DownloadObject(ctx context.Context, objectName, bucket string) error {
+func (a *S3Client) DownloadObject(ctx context.Context, objectName, bucket string) error {
 	var downloadError *DownloadError
 
 	file, err := os.Open(objectName)
@@ -92,7 +92,7 @@ func (a *AWSClient) DownloadObject(ctx context.Context, objectName, bucket strin
 	return nil
 }
 
-// MinioClient is a struct that implements the S3DownloadUploader interface using MinIO's S3 SDK for Go
+// MinioClient is a struct that implements the DownloadUploader interface using MinIO's S3 SDK for Go
 type MinioClient struct {
 	// S3Client is the service client for MinIO
 	S3Client *minio.Client
@@ -141,30 +141,28 @@ func (uploader *MinioClient) UploadObject(ctx context.Context, filename, bucket 
 	return nil
 }
 
-// DownloadObject uploads to an MinIO bucket with the given file
+// DownloadObject downloads an object from a MinIO bucket with the given object name
 // TODO this needs to return the file/data received
-func (m *MinioClient) DownloadObject(ctx context.Context, objectName, bucket string) error {
+func (m *MinioClient) DownloadObject(ctx context.Context, objectName, bucket string) ([]byte, error) {
 	var downloadError *DownloadError
-
+	data := make([]byte, 1)
 	file, err := os.Open(objectName)
 	if err != nil {
 		downloadError.Err = err
-		return downloadError
+		return data, downloadError
 	}
 	defer file.Close()
 
-	size, err := file.Stat()
+
+	opts := minio.GetObjectOptions{}
+	response, err := m.S3Client.GetObject(ctx, bucket, objectName, opts)
 	if err != nil {
 		downloadError.Err = err
-		return downloadError
+		return data, downloadError
 	}
-
-	response, err := m.S3Client.PutObject(ctx, bucket, objectName, file, size.Size(), minio.PutObjectOptions{})
-	if err != nil {
-		downloadError.Err = err
-		return downloadError
-	}
-
-	log.Debug("response from object being uploaded", "metadata", response)
-	return nil
+	
+	defer response.Close()
+	log.Debug("completed download reqeust", "bucket", bucket, "file", objectName)
+	// TODO does minio have easily accessible metadata on downloads
+	return data, nil
 }

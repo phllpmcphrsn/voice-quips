@@ -5,7 +5,7 @@ import (
 )
 
 type Saver interface {
-	Save(context.Context, AudioFile) (*AudioFile, error)
+	Save(context.Context, FileInformation) (*FileInformation, error)
 }
 
 type Deleter interface {
@@ -13,11 +13,11 @@ type Deleter interface {
 }
 
 type Finder interface {
-	FindById(context.Context, string) (*AudioFile, error)
+	FindById(context.Context, string) (*FileInformation, error)
 }
 
 type AllFinder interface {
-	FindAll(context.Context) ([]*AudioFile, error)
+	FindAll(context.Context) ([]*FileInformation, error)
 }
 
 // Storer defines the API for interacting with NO/SQL storage
@@ -28,21 +28,26 @@ type Storer interface {
 	AllFinder
 }
 
-type AudioFileService struct {
+type FileInformationService struct {
 	repo FileInformationRepository
 }
 
-func (m *AudioFileService) Save(ctx context.Context, audioFile AudioFile) (*AudioFile, error) {
-	return m.repo.Create(ctx, audioFile)
+func NewFileInformationService(repo FileInformationRepository) *FileInformationService {
+	return &FileInformationService{repo: repo}
 }
 
-func (m *AudioFileService) Delete(ctx context.Context, id string) error {
+func (m *FileInformationService) Save(ctx context.Context, fileInfo FileInformation) (*FileInformation, error) {
+	return m.repo.Create(ctx, fileInfo)
+}
+
+func (m *FileInformationService) Delete(ctx context.Context, id string) error {
 	return m.repo.Delete(ctx, id)
 }
 
-func (m *AudioFileService) FindById(ctx context.Context, id string) (*AudioFile, error) {
+func (m *FileInformationService) FindById(ctx context.Context, id string) (*FileInformation, error) {
 	return m.repo.FindById(ctx, id)
 }
-func (m *AudioFileService) FindAll(ctx context.Context) ([]*AudioFile, error) {
+
+func (m *FileInformationService) FindAll(ctx context.Context) ([]*FileInformation, error) {
 	return m.repo.FindAll(ctx)
 }
