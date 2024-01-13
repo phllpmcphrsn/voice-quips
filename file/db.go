@@ -13,9 +13,9 @@ import (
 )
 
 type FileInformationRepository interface {
-	FindById(context.Context, string) (*FileInformation, error)
-	FindAll(context.Context) ([]*FileInformation, error)
-	Create(context.Context, FileInformation) (*FileInformation, error)
+	FindById(context.Context, string) (*FileRecord, error)
+	FindAll(context.Context) ([]*FileRecord, error)
+	Create(context.Context, FileRecord) (*FileRecord, error)
 	Delete(context.Context, string) error
 }
 
@@ -70,7 +70,7 @@ func (p *PostgresStore) CreateTable() error {
 }
 
 // CreateIndexOn creates an index on the list of columns given. The name provided will
-// be 
+// be
 func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	stmtParameters := strings.Join(columns, ",")
 
@@ -83,9 +83,9 @@ func (p *PostgresStore) CreateIndexOn(name string, columns []string) error {
 	return nil
 }
 
-func (p *PostgresStore) FindById(ctx context.Context, id string) (*FileInformation, error) {
+func (p *PostgresStore) FindById(ctx context.Context, id string) (*FileRecord, error) {
 	log.Debug("Retrieving a file_info record from the DB", "id", id)
-	var fileInformation FileInformation
+	var fileInformation FileRecord
 
 	// Query for a single row
 	selectStmt := "SELECT * FROM file_info WHERE id = $1"
@@ -106,8 +106,8 @@ func (p *PostgresStore) FindById(ctx context.Context, id string) (*FileInformati
 	return &fileInformation, nil
 }
 
-func (p *PostgresStore) FindAll(ctx context.Context) ([]*FileInformation, error) {
-	var fileInformations []*FileInformation
+func (p *PostgresStore) FindAll(ctx context.Context) ([]*FileRecord, error) {
+	var fileInformations []*FileRecord
 
 	// Query for all rows
 	selectStmt := "SELECT * FROM file_info"
@@ -120,7 +120,7 @@ func (p *PostgresStore) FindAll(ctx context.Context) ([]*FileInformation, error)
 	}
 	defer rows.Close()
 
-	var fileInformation *FileInformation
+	var fileInformation *FileRecord
 	for rows.Next() {
 		err = rows.Scan(
 			&fileInformation.ID,
@@ -145,7 +145,7 @@ func (p *PostgresStore) FindAll(ctx context.Context) ([]*FileInformation, error)
 	return fileInformations, nil
 }
 
-func (p *PostgresStore) Create(ctx context.Context, fileInformation FileInformation) (*FileInformation, error) {
+func (p *PostgresStore) Create(ctx context.Context, fileInformation FileRecord) (*FileRecord, error) {
 	log.Debug("Inserting a file_info record into the DB", "record", fileInformation)
 	insertStmt := `
 	INSERT INTO file_info (
@@ -158,7 +158,7 @@ func (p *PostgresStore) Create(ctx context.Context, fileInformation FileInformat
 	VALUES ($1, $2, $3, $4, $5)
 	RETURNING *`
 
-	var savedfileInformation *FileInformation
+	var savedfileInformation *FileRecord
 	err := p.db.QueryRowContext(
 		ctx,
 		insertStmt,

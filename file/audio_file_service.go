@@ -2,7 +2,6 @@ package file
 
 import (
 	"context"
-	"errors"
 	log "log/slog"
 	"mime/multipart"
 
@@ -10,7 +9,7 @@ import (
 )
 
 type Saver interface {
-	Save(context.Context, multipart.File) (*FileInformation, error)
+	Save(context.Context, multipart.File) (*FileRecord, error)
 }
 
 type Deleter interface {
@@ -18,11 +17,11 @@ type Deleter interface {
 }
 
 type Finder interface {
-	FindById(context.Context, string) (*FileInformation, error)
+	FindById(context.Context, string) (*FileRecord, error)
 }
 
 type AllFinder interface {
-	FindAll(context.Context) ([]*FileInformation, error)
+	FindAll(context.Context) ([]*FileRecord, error)
 }
 
 // Storer defines the API for interacting with NO/SQL storage
@@ -41,8 +40,8 @@ func NewFileInformationService(repo FileInformationRepository) *FileInformationS
 	return &FileInformationService{repo: repo}
 }
 
-func (m *FileInformationService) Save(ctx context.Context, file multipart.File) (*FileInformation, error) {
-	var fileInfo FileInformation
+func (m *FileInformationService) Save(ctx context.Context, file multipart.File) (*FileRecord, error) {
+	var fileInfo FileRecord
 
 	metadata, err := GetMetadata(file)
 	if err != nil {
@@ -50,7 +49,6 @@ func (m *FileInformationService) Save(ctx context.Context, file multipart.File) 
 	}
 	fileInfo.Metadata = metadata
 
-	fileInfo.Filename = ctx.
 	return m.repo.Create(ctx, fileInfo)
 }
 
@@ -74,10 +72,10 @@ func (m *FileInformationService) Delete(ctx context.Context, id string) error {
 	return m.repo.Delete(ctx, id)
 }
 
-func (m *FileInformationService) FindById(ctx context.Context, id string) (*FileInformation, error) {
+func (m *FileInformationService) FindById(ctx context.Context, id string) (*FileRecord, error) {
 	return m.repo.FindById(ctx, id)
 }
 
-func (m *FileInformationService) FindAll(ctx context.Context) ([]*FileInformation, error) {
+func (m *FileInformationService) FindAll(ctx context.Context) ([]*FileRecord, error) {
 	return m.repo.FindAll(ctx)
 }

@@ -2,7 +2,12 @@ package file
 
 import "time"
 
-type FileInformation struct {
+// type FileRequest stuct {
+// 	Header 
+// }
+
+// FileRecord is a DTO
+type FileRecord struct {
 	ID         uint      `json:"id"`
 	Filename   string    `json:"name"`
 	FileType   string    `json:"type"`
@@ -11,6 +16,7 @@ type FileInformation struct {
 	UploadDate time.Time `json:"uploadDate"`
 	Metadata   `json:"metadata"`
 }
+
 
 type Metadata struct {
 	Title  string `json:"title"`

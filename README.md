@@ -9,3 +9,6 @@ Postgresql - store metadata and links to S3 files
 
 # MinIO setup
 `docker run -d -p 9000:9000/tcp -p 9001:9001  minio/minio:latest server /data --console-address ":9001"`
+
+# Postgresql setup
+`docker run --name postgres -e POSTGRES_PASSWORD=postgres -d postgres`

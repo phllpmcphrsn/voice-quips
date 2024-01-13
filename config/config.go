@@ -96,15 +96,17 @@ func LoadConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
+	// TODO walk the directory or list files to ensure it contains something
 	// if path doesn't exist an error will be returned
 	err = PathExists(config.AudioDirectory)
 	if err != nil {
-		log.Error("missing directory for audio files in config", "err", err)
-		return nil, errors.New("missing directory for audio files in config")
+		log.Error("missing directory for audio files in config", "err", err, "directory", config.AudioDirectory)
+		// return nil, errors.New("missing directory for audio files in config")
 	}
 
 	// TODO add if-statements checking for fields' values existence
 	// TODO API if-statements
+	
 	// TOOD Database if-statements
 	if config.Database.FileInfoConfig.Credentials.GetFromEnv {
 		config.Database.FileInfoConfig.Credentials.GetCredentialsFromEnv()

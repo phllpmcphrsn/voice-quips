@@ -12,9 +12,9 @@ type MockFileInformationRepository struct {
 	mock.Mock
 }
 
-func (m *MockFileInformationRepository) Create(ctx context.Context, audioFile FileInformation) (*FileInformation, error) {
+func (m *MockFileInformationRepository) Create(ctx context.Context, audioFile FileRecord) (*FileRecord, error) {
 	args := m.Called(ctx, audioFile)
-	return args.Get(0).(*FileInformation), args.Error(1)
+	return args.Get(0).(*FileRecord), args.Error(1)
 }
 
 func (m *MockFileInformationRepository) Delete(ctx context.Context, id string) error {
@@ -22,37 +22,37 @@ func (m *MockFileInformationRepository) Delete(ctx context.Context, id string) e
 	return args.Error(0)
 }
 
-func (m *MockFileInformationRepository) FindById(ctx context.Context, id string) (*FileInformation, error) {
+func (m *MockFileInformationRepository) FindById(ctx context.Context, id string) (*FileRecord, error) {
 	args := m.Called(ctx, id)
-	return args.Get(0).(*FileInformation), args.Error(1)
+	return args.Get(0).(*FileRecord), args.Error(1)
 }
 
-func (m *MockFileInformationRepository) FindAll(ctx context.Context) ([]*FileInformation, error) {
+func (m *MockFileInformationRepository) FindAll(ctx context.Context) ([]*FileRecord, error) {
 	args := m.Called(ctx)
-	return args.Get(0).([]*FileInformation), args.Error(1)
+	return args.Get(0).([]*FileRecord), args.Error(1)
 }
 
 func TestAudioFileService_SaveAudioFile(t *testing.T) {
 	testCases := []struct {
 		name              string
 		mockRepository    *MockFileInformationRepository
-		inputAudioFile    FileInformation
-		expectedAudioFile *FileInformation
+		inputAudioFile    FileRecord
+		expectedAudioFile *FileRecord
 		expectedError     bool
 		returnedError     error
 	}{
 		{
 			name:              "SuccessfulSave",
 			mockRepository:    new(MockFileInformationRepository),
-			inputAudioFile:    FileInformation{ID: 123, Filename: "TestAudioFile"},
-			expectedAudioFile: &FileInformation{ID: 123, Filename: "TestAudioFile"},
+			inputAudioFile:    FileRecord{ID: 123, Filename: "TestAudioFile"},
+			expectedAudioFile: &FileRecord{ID: 123, Filename: "TestAudioFile"},
 			expectedError:     false,
 			returnedError:     nil,
 		},
 		{
 			name:              "SaveError",
 			mockRepository:    new(MockFileInformationRepository),
-			inputAudioFile:    FileInformation{ID: 123, Filename: "TestAudioFile"},
+			inputAudioFile:    FileRecord{ID: 123, Filename: "TestAudioFile"},
 			expectedAudioFile: nil,
 			expectedError:     true,
 			returnedError:     &DBError{},
