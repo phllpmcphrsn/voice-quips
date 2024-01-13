@@ -52,6 +52,7 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.21.0 // indirect
+	github.com/dhowden/tag v0.0.0-20230630033851-978a0926ee25
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gordonklaus/portaudio v0.0.0-20230709114228-aafa478834f5

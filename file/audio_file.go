@@ -16,5 +16,6 @@ type Metadata struct {
 	Title  string `json:"title"`
 	Artist string `json:"artist"`
 	Album  string `json:"album"`
-	Year   string `json:"year"`
+	Year   int `json:"year"`
 }
+

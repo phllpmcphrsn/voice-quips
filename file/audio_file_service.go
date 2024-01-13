@@ -2,10 +2,15 @@ package file
 
 import (
 	"context"
+	"errors"
+	log "log/slog"
+	"mime/multipart"
+
+	"github.com/dhowden/tag"
 )
 
 type Saver interface {
-	Save(context.Context, FileInformation) (*FileInformation, error)
+	Save(context.Context, multipart.File) (*FileInformation, error)
 }
 
 type Deleter interface {
@@ -36,8 +41,33 @@ func NewFileInformationService(repo FileInformationRepository) *FileInformationS
 	return &FileInformationService{repo: repo}
 }
 
-func (m *FileInformationService) Save(ctx context.Context, fileInfo FileInformation) (*FileInformation, error) {
+func (m *FileInformationService) Save(ctx context.Context, file multipart.File) (*FileInformation, error) {
+	var fileInfo FileInformation
+
+	metadata, err := GetMetadata(file)
+	if err != nil {
+		return nil, err
+	}
+	fileInfo.Metadata = metadata
+
+	fileInfo.Filename = ctx.
 	return m.repo.Create(ctx, fileInfo)
+}
+
+func GetMetadata(file multipart.File) (Metadata, error) {
+	metadata, err := tag.ReadFrom(file)
+	if err != nil {
+		log.Error("could not parse metadata from file", "err", err)
+		return Metadata{}, err
+	}
+	
+	return Metadata{
+		Title: metadata.Title(), 
+		Artist: metadata.Artist(), 
+		Album: metadata.Album(), 
+		Year: metadata.Year(),
+		}, 
+		nil
 }
 
 func (m *FileInformationService) Delete(ctx context.Context, id string) error {

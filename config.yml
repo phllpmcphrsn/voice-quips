@@ -6,7 +6,7 @@
 audioDirectory: "g:/Users/phllp/go/github.com/phllpmcphrsn/voice-uploader/audio_files"
 
 api:
-  path: "/voice-quips"
+  path: "/api/v1/voice-quips"
   address: ":9090"
   env: "dev"
 

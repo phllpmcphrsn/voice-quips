@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -13,6 +14,8 @@ import (
 	"github.com/phllpmcphrsn/voice-quips/file"
 	"github.com/phllpmcphrsn/voice-quips/s3"
 )
+
+const MegaByte int64 = 10 << 10
 
 type APIServer struct {
 	// API properties
@@ -54,29 +57,68 @@ func (a *APIServer) getAudio(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, metadatum)
 }
 
-// GET /api/v1/audio/{id, name}
-// POST /api/v1/audio
+// GET /audio/{id, name}
+func (a *APIServer) getAudioByIdAndName(c *gin.Context) {
+	var err error
+
+	id := c.Query("id")
+	name := c.Query("name")
+
+	if id == "" && name == "" {
+		err = errors.New("neither id or name params given")
+		log.Error("request failed", "err", err, "request", c.Request.RequestURI)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	file_info, err := a.fileService.FindById(c, id)
+	if err != nil {
+		log.Error("request for the following ID was not found", "err", err, "id", id, "request", c.Request.RequestURI)
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+
+	file, err := a.s3Service.DownloadObject(c, name, file_info.S3Link)
+	print(file)
+
+}
+
+// POST /audio
 func (a *APIServer) createAudio(c *gin.Context) {
-	err := c.Request.ParseMultipartForm(10 << 10) // 1 MB
+	
+	err := c.Request.ParseMultipartForm(MegaByte) // 1 MB
 	if err != nil {
 		log.Error("could not parse form in request", "err", err)
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
-	file, header, err := c.Request.FormFile("uploadFile")
+	
+	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		log.Error("Could not retrieve upload file from request", "err", err)
-		c.AbortWithError(http.StatusInternalServerError, InternalServerError(""))
+		c.AbortWithError(http.StatusInternalServerError, InternalServerError("Could not retrieve upload file from request"))
 		return
 	}
 
 	defer file.Close()
 
+	// content goes to S3
 	content, err := io.ReadAll(file)
 	if err != nil {
 		log.Error("could not read file", "err", err)
 	}
 
+	if len(content) > int(MegaByte) {
+		err = errors.New("file size too large")
+		log.Error(err.Error())
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	// make call to fileInfo DB, returns required fileInfo object
+	a.fileService.Save(c, file)
+	// make call to s3Service, get bucket and filename from returned fileInfo object, supply content
+	// a.s3Service.UploadObject(c, )
 	log.Info("file related stuff", "file", string(content), "header", header)
+	c.IndentedJSON(http.StatusCreated, nil)
 }
 
 // DELETE /api/v1/audio/{id}
